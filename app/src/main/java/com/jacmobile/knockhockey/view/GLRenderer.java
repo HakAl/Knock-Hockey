@@ -1,11 +1,10 @@
 package com.jacmobile.knockhockey.view;
 
-import android.content.Context;
 import android.opengl.GLSurfaceView;
 
 import com.jacmobile.knockhockey.BuildConfig;
-import com.jacmobile.knockhockey.R;
 import com.jacmobile.knockhockey.utils.GLUtils;
+import com.jacmobile.knockhockey.utils.LinkedShaders;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -14,16 +13,34 @@ import java.nio.FloatBuffer;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import static android.opengl.Matrix.*;
+import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
+import static android.opengl.GLES20.GL_FLOAT;
 import static android.opengl.GLES20.*;
+import static android.opengl.GLES20.glClear;
+import static android.opengl.GLES20.glClearColor;
+import static android.opengl.GLES20.glDrawArrays;
+import static android.opengl.GLES20.glEnableVertexAttribArray;
+import static android.opengl.GLES20.glGetAttribLocation;
+import static android.opengl.GLES20.glGetUniformLocation;
+import static android.opengl.GLES20.glUniformMatrix4fv;
+import static android.opengl.GLES20.glUseProgram;
+import static android.opengl.GLES20.glVertexAttribPointer;
+import static android.opengl.Matrix.orthoM;
+import static com.jacmobile.knockhockey.model.ObjectVertices.COLOR_COMPONENT_COUNT;
+import static com.jacmobile.knockhockey.model.ObjectVertices.NUMBER_OF_VERTICES;
+import static com.jacmobile.knockhockey.model.ObjectVertices.POSITION_COMPONENT_COUNT;
+import static com.jacmobile.knockhockey.model.ObjectVertices.STRIDE;
 import static com.jacmobile.knockhockey.model.ObjectVertices.*;
-import static com.jacmobile.knockhockey.utils.GLUtils.*;
+import static com.jacmobile.knockhockey.utils.GLUtils.compileFragmentShader;
+import static com.jacmobile.knockhockey.utils.GLUtils.compileVertexShader;
+import static com.jacmobile.knockhockey.utils.GLUtils.linkProgram;
+import static com.jacmobile.knockhockey.utils.GLUtils.validateProgram;
 
 public class GLRenderer implements GLSurfaceView.Renderer
 {
-    private final Context context;
-    private final FloatBuffer vertexData;
     private int program;
+    private final FloatBuffer vertexData;
+    private final LinkedShaders linkedShaders;
 
     private int aPositionLocation;
     private static final String A_POSITION = "a_Position";
@@ -32,12 +49,9 @@ public class GLRenderer implements GLSurfaceView.Renderer
     private int uMatrixLocation;
     private static final String U_MATRIX = "u_Matrix";
     private final float[] projectionMatrix = new float[16];
-    
-    public static final int STRIDE = (POSITION_COMPONENT_COUNT + COLOR_COMPONENT_COUNT) * BYTES_PER_FLOAT;
-
 
     /**
-     * Allocate memory for the vertices.
+     * Allocate native memory for the vertices *that won't be GC'ed*.
      * After copying the data to memory, the data must be passed
      * to OpenGL through shaders. Shaders tell the GPU how to
      * process data.
@@ -45,31 +59,27 @@ public class GLRenderer implements GLSurfaceView.Renderer
      * If code requires many ByteBuffers, refer to this:
      * http://en.wikipedia.org/wiki/Memory_pool
      */
-    public GLRenderer(Context context)
+    public GLRenderer(LinkedShaders linkedShaders)
     {
-        this.context = context.getApplicationContext();
-
-        //this allocates native memory that won't be garbage collected
+        this.linkedShaders = linkedShaders;
         this.vertexData = ByteBuffer
-                .allocateDirect(NUMBER_OF_VERTICES * GLUtils.BYTES_PER_FLOAT)
+                .allocateDirect(NUMBER_OF_VERTICES * BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
-
         //copy from Java to native memory
         vertexData.put(TABLE_VERTICES_TRIANGLES);
+        vertexData.put(CENTER_DIVIDER_LINE);
+        vertexData.put(MALLET_A);
+        vertexData.put(MALLET_B);
     }
 
     @Override public void onSurfaceCreated(GL10 gl, EGLConfig config)
     {
         glClearColor(0,0,0,0);
 
-        //link shaders
-        String vertexShaderString = readTextFileFromResource(context, R.raw.vertex_shader);
-        String fragmentShaderString = readTextFileFromResource(context, R.raw.fragment_shader);
-        int vertexShader = compileVertexShader(vertexShaderString);
-        int fragmentShader = compileFragmentShader(fragmentShaderString);
-        program = linkProgram(vertexShader, fragmentShader);
-        if (BuildConfig.DEBUG) validateProgram(program);
+        program = linkProgram(compileVertexShader(linkedShaders.vertexShader),
+                compileFragmentShader(linkedShaders.fragmentShader));
+        validateProgram(program);
         glUseProgram(program);
 
         aColorLocation = glGetAttribLocation(program, A_COLOR);
@@ -92,9 +102,7 @@ public class GLRenderer implements GLSurfaceView.Renderer
     {
         gl.glViewport(0,0,width,height);
 
-        final float aspectRatio = width > height ?
-                (float) width / (float) height :
-                (float) height / (float) width;
+        final float aspectRatio = GLUtils.getAspectRatio(width, height);
         if (width > height) {
             orthoM(projectionMatrix, 0, -aspectRatio, aspectRatio, -1, 1, -1, 1);
         } else {
@@ -106,12 +114,11 @@ public class GLRenderer implements GLSurfaceView.Renderer
     {
         glClear(GL_COLOR_BUFFER_BIT);
         glUniformMatrix4fv(uMatrixLocation, 1, false, projectionMatrix, 0);
-//        //Table
+        // table rect
         glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
-//        //Dividing line
+        // center divider
         glDrawArrays(GL_LINES, 6, 2);
-//        //Mallets
-        glDrawArrays(GL_POINTS, 8, 1);
+        // mallets
         glDrawArrays(GL_POINTS, 8, 1);
         glDrawArrays(GL_POINTS, 9, 1);
     }

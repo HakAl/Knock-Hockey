@@ -38,11 +38,6 @@ public class GLUtils
     private static final int GL_VERSION_2 = 0x20000;
 
     /**
-     * A float in Java has 32 bits of precision, while a byte has 8.
-     */
-    public static final int BYTES_PER_FLOAT = 4;
-
-    /**
      * configurationInfo.reqGlEsVersion >= GL_VERSION_2 is fine for all
      * devices. Extra logic supports the emulator.
      *
@@ -157,12 +152,21 @@ public class GLUtils
     public static boolean validateProgram(int programObjectId)
     {
         glValidateProgram(programObjectId);
-
         final int[] validateStatus = new int[1];
-        glGetProgramiv(programObjectId, GL_VALIDATE_STATUS, validateStatus, 0);
-        Logger.log("Results of validating program: "+validateStatus[0]
-                    + "\nGL info log: "+glGetProgramInfoLog(programObjectId));
+
+        if (BuildConfig.DEBUG) {
+            glGetProgramiv(programObjectId, GL_VALIDATE_STATUS, validateStatus, 0);
+            Logger.log("Results of validating program: " + validateStatus[0]
+                    + "\nGL info log: " + glGetProgramInfoLog(programObjectId));
+        }
 
         return validateStatus[0] != 0;
+    }
+
+    public static final float getAspectRatio(int width, int height)
+    {
+        return width > height ?
+                (float) width / (float) height :
+                (float) height / (float) width;
     }
 }

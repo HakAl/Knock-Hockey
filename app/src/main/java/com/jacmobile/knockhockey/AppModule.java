@@ -4,12 +4,15 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
 
+import com.jacmobile.knockhockey.utils.LinkedShaders;
 import com.jacmobile.knockhockey.view.GLRenderer;
 
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+
+import static com.jacmobile.knockhockey.utils.GLUtils.readTextFileFromResource;
 
 @Module public class AppModule
 {
@@ -30,8 +33,14 @@ import dagger.Provides;
         return am.getDeviceConfigurationInfo();
     }
 
-    @Provides @Singleton public GLRenderer provideGLRenderer()
+    @Provides @Singleton public LinkedShaders provideShaderObjects()
     {
-        return new GLRenderer(app);
+        return new LinkedShaders(readTextFileFromResource(app, R.raw.vertex_shader),
+                readTextFileFromResource(app, R.raw.fragment_shader));
+    }
+
+    @Provides @Singleton public GLRenderer provideGLRenderer(LinkedShaders linkedShaders)
+    {
+        return new GLRenderer(linkedShaders);
     }
 }
