@@ -24,7 +24,7 @@ public class MainActivity extends Activity
     {
         super.onCreate(savedInstanceState);
         ((App) getApplication()).getAppComponent().inject(this);
-        if (GLUtils.supportsGLEs2(configurationInfo)) {
+        if (GLUtils.supportsGLES2(configurationInfo)) {
             this.glSurfaceView = new GLSurfaceView(this);
             glSurfaceView.setEGLContextClientVersion(2);
             glSurfaceView.setRenderer(glRenderer);

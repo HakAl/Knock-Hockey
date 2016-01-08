@@ -38,13 +38,18 @@ public class GLUtils
     private static final int GL_VERSION_2 = 0x20000;
 
     /**
+     * A float in Java has 32 bits of precision, while a byte has 8.
+     */
+    public static final int BYTES_PER_FLOAT = 4;
+
+    /**
      * configurationInfo.reqGlEsVersion >= GL_VERSION_2 is fine for all
      * devices. Extra logic supports the emulator.
      *
      * @param configurationInfo ActivityManager.getConfigInfo
      * @return true if GLES is supported
      */
-    public static boolean supportsGLEs2(ConfigurationInfo configurationInfo)
+    public static boolean supportsGLES2(ConfigurationInfo configurationInfo)
     {
         return !BuildConfig.DEBUG ? configurationInfo.reqGlEsVersion >= GL_VERSION_2
                 : configurationInfo.reqGlEsVersion >= GL_VERSION_2 ||
@@ -55,11 +60,6 @@ public class GLUtils
                         || Build.MODEL.contains("Emulator")
                         || Build.MODEL.contains("Android SDK built for x86")));
     }
-
-    /**
-     * A float in Java has 32 bits of precision, while a byte has 8.
-     */
-    public static final int BYTES_PER_FLOAT = 4;
 
     /**
      * Used to read in .glsl files from res/raw

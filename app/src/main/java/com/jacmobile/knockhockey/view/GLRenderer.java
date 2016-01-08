@@ -31,7 +31,7 @@ public class GLRenderer implements GLSurfaceView.Renderer
     private static final String A_COLOR = "a_Color";
     private int uMatrixLocation;
     private static final String U_MATRIX = "u_Matrix";
-    private final float[] projecttionMatrix = new float[16];
+    private final float[] projectionMatrix = new float[16];
     
     public static final int STRIDE = (POSITION_COMPONENT_COUNT + COLOR_COMPONENT_COUNT) * BYTES_PER_FLOAT;
 
@@ -74,7 +74,7 @@ public class GLRenderer implements GLSurfaceView.Renderer
 
         aColorLocation = glGetAttribLocation(program, A_COLOR);
         aPositionLocation = glGetAttribLocation(program, A_POSITION);
-//        uMatrixLocation = glGetUniformLocation(program, U_MATRIX);
+        uMatrixLocation = glGetUniformLocation(program, U_MATRIX);
         vertexData.position(0);
 
         //tell GL where to read data for the attribute a_Position
@@ -96,16 +96,16 @@ public class GLRenderer implements GLSurfaceView.Renderer
                 (float) width / (float) height :
                 (float) height / (float) width;
         if (width > height) {
-            orthoM(projecttionMatrix, 0, -aspectRatio, aspectRatio, -1, 1, -1, 1);
+            orthoM(projectionMatrix, 0, -aspectRatio, aspectRatio, -1, 1, -1, 1);
         } else {
-            orthoM(projecttionMatrix, 0, -1, 1, -aspectRatio, aspectRatio, -1, 1);
+            orthoM(projectionMatrix, 0, -1, 1, -aspectRatio, aspectRatio, -1, 1);
         }
     }
 
     @Override public void onDrawFrame(GL10 gl)
     {
         glClear(GL_COLOR_BUFFER_BIT);
-        glUniformMatrix4fv(uMatrixLocation, 1, false, projecttionMatrix, 0);
+        glUniformMatrix4fv(uMatrixLocation, 1, false, projectionMatrix, 0);
 //        //Table
         glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
 //        //Dividing line
