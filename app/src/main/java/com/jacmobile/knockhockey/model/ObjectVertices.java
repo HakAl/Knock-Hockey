@@ -15,18 +15,18 @@ public class ObjectVertices
     public static final float[] TABLE_VERTICES_TRIANGLES = {
         // Triangle fan -- requires 6 points for a rectangle
             0, 0, 1, 1, 1,
-            -.5f, -.5f, .7f, .7f, .7f,
-            .5f, -.5f, .7f, .7f, .7f,
-            .5f, .5f, .7f, .7f, .7f,
-            -.5f, .5f, .7f, .7f, .7f,
-            -.5f, -.5f, .7f, .7f, .7f,
+            -.5f, -.8f, .7f, .7f, .7f,
+            .5f, -.8f, .7f, .7f, .7f,
+            .5f, .8f, .7f, .7f, .7f,
+            -.5f, .8f, .7f, .7f, .7f,
+            -.5f, -.8f, .7f, .7f, .7f,
         // center divider
             -.5f, 0f, 1, 0, 0,
             .5f, 0f, 1, 0, 0,
         // first mallet
-            0, -.25f, 0, 0, 1,
+            0, -.4f, 0, 0, 1,
         // second mallet
-            0, .25f, 1, 0, 0
+            0, .4f, 1, 0, 0
     };
 
     //Used to allocate memory

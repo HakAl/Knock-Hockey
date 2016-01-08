@@ -143,10 +143,7 @@ public class GLUtils
 
         final int[] linkStatus = new int[1];
         glGetProgramiv(programObjectId, GL_LINK_STATUS, linkStatus, 0);
-
-        if (BuildConfig.DEBUG) {
-            Logger.log("Result of linking the program:\n" + glGetProgramInfoLog(programObjectId));
-        }
+        Logger.log("Result of linking the program:\n" + glGetProgramInfoLog(programObjectId));
 
         if (linkStatus[0] == 0) {
             //linking failed, delete program

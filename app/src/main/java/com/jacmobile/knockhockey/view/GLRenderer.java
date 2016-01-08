@@ -14,41 +14,24 @@ import java.nio.FloatBuffer;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
-import static android.opengl.GLES20.GL_FLOAT;
-import static android.opengl.GLES20.GL_LINES;
-import static android.opengl.GLES20.GL_POINTS;
-import static android.opengl.GLES20.GL_TRIANGLE_FAN;
-import static android.opengl.GLES20.glClear;
-import static android.opengl.GLES20.glClearColor;
-import static android.opengl.GLES20.glDrawArrays;
-import static android.opengl.GLES20.glEnableVertexAttribArray;
-import static android.opengl.GLES20.glGetAttribLocation;
-import static android.opengl.GLES20.glUseProgram;
-import static android.opengl.GLES20.glVertexAttribPointer;
-import static com.jacmobile.knockhockey.model.ObjectVertices.COLOR_COMPONENT_COUNT;
-import static com.jacmobile.knockhockey.model.ObjectVertices.NUMBER_OF_VERTICES;
-import static com.jacmobile.knockhockey.model.ObjectVertices.POSITION_COMPONENT_COUNT;
-import static com.jacmobile.knockhockey.model.ObjectVertices.TABLE_VERTICES_TRIANGLES;
-import static com.jacmobile.knockhockey.utils.GLUtils.BYTES_PER_FLOAT;
-import static com.jacmobile.knockhockey.utils.GLUtils.compileFragmentShader;
-import static com.jacmobile.knockhockey.utils.GLUtils.compileVertexShader;
-import static com.jacmobile.knockhockey.utils.GLUtils.linkProgram;
-import static com.jacmobile.knockhockey.utils.GLUtils.readTextFileFromResource;
-import static com.jacmobile.knockhockey.utils.GLUtils.validateProgram;
+import static android.opengl.Matrix.*;
+import static android.opengl.GLES20.*;
+import static com.jacmobile.knockhockey.model.ObjectVertices.*;
+import static com.jacmobile.knockhockey.utils.GLUtils.*;
 
 public class GLRenderer implements GLSurfaceView.Renderer
 {
     private final Context context;
     private final FloatBuffer vertexData;
     private int program;
-    //attribute defined in vertex shader
-    private static final String A_POSITION = "a_Position";
+
     private int aPositionLocation;
-    //varying color defined in vertex / fragment shaders
-    private static final String A_COLOR = "a_Color";
+    private static final String A_POSITION = "a_Position";
     private int aColorLocation;
+    private static final String A_COLOR = "a_Color";
+    private int uMatrixLocation;
     private static final String U_MATRIX = "u_Matrix";
+    private final float[] projecttionMatrix = new float[16];
     
     public static final int STRIDE = (POSITION_COMPONENT_COUNT + COLOR_COMPONENT_COUNT) * BYTES_PER_FLOAT;
 
@@ -91,6 +74,7 @@ public class GLRenderer implements GLSurfaceView.Renderer
 
         aColorLocation = glGetAttribLocation(program, A_COLOR);
         aPositionLocation = glGetAttribLocation(program, A_POSITION);
+//        uMatrixLocation = glGetUniformLocation(program, U_MATRIX);
         vertexData.position(0);
 
         //tell GL where to read data for the attribute a_Position
@@ -101,16 +85,27 @@ public class GLRenderer implements GLSurfaceView.Renderer
         vertexData.position(POSITION_COMPONENT_COUNT);
         glVertexAttribPointer(aColorLocation, COLOR_COMPONENT_COUNT, GL_FLOAT, false, STRIDE, vertexData);
         glEnableVertexAttribArray(aColorLocation);
+
     }
 
     @Override public void onSurfaceChanged(GL10 gl, int width, int height)
     {
         gl.glViewport(0,0,width,height);
+
+        final float aspectRatio = width > height ?
+                (float) width / (float) height :
+                (float) height / (float) width;
+        if (width > height) {
+            orthoM(projecttionMatrix, 0, -aspectRatio, aspectRatio, -1, 1, -1, 1);
+        } else {
+            orthoM(projecttionMatrix, 0, -1, 1, -aspectRatio, aspectRatio, -1, 1);
+        }
     }
 
     @Override public void onDrawFrame(GL10 gl)
     {
         glClear(GL_COLOR_BUFFER_BIT);
+        glUniformMatrix4fv(uMatrixLocation, 1, false, projecttionMatrix, 0);
 //        //Table
         glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
 //        //Dividing line

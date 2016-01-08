@@ -3,7 +3,6 @@ package com.jacmobile.knockhockey;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
-import android.opengl.GLSurfaceView;
 
 import com.jacmobile.knockhockey.view.GLRenderer;
 
