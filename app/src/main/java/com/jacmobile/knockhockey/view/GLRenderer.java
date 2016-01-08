@@ -2,8 +2,6 @@ package com.jacmobile.knockhockey.view;
 
 import android.opengl.GLSurfaceView;
 
-import com.jacmobile.knockhockey.BuildConfig;
-import com.jacmobile.knockhockey.utils.GLUtils;
 import com.jacmobile.knockhockey.utils.LinkedShaders;
 
 import java.nio.ByteBuffer;
@@ -15,7 +13,9 @@ import javax.microedition.khronos.opengles.GL10;
 
 import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
 import static android.opengl.GLES20.GL_FLOAT;
-import static android.opengl.GLES20.*;
+import static android.opengl.GLES20.GL_LINES;
+import static android.opengl.GLES20.GL_POINTS;
+import static android.opengl.GLES20.GL_TRIANGLE_FAN;
 import static android.opengl.GLES20.glClear;
 import static android.opengl.GLES20.glClearColor;
 import static android.opengl.GLES20.glDrawArrays;
@@ -25,12 +25,13 @@ import static android.opengl.GLES20.glGetUniformLocation;
 import static android.opengl.GLES20.glUniformMatrix4fv;
 import static android.opengl.GLES20.glUseProgram;
 import static android.opengl.GLES20.glVertexAttribPointer;
-import static android.opengl.Matrix.orthoM;
-import static com.jacmobile.knockhockey.model.ObjectVertices.COLOR_COMPONENT_COUNT;
-import static com.jacmobile.knockhockey.model.ObjectVertices.NUMBER_OF_VERTICES;
-import static com.jacmobile.knockhockey.model.ObjectVertices.POSITION_COMPONENT_COUNT;
-import static com.jacmobile.knockhockey.model.ObjectVertices.STRIDE;
-import static com.jacmobile.knockhockey.model.ObjectVertices.*;
+import static android.opengl.Matrix.multiplyMM;
+import static android.opengl.Matrix.perspectiveM;
+import static android.opengl.Matrix.rotateM;
+import static android.opengl.Matrix.setIdentityM;
+import static android.opengl.Matrix.translateM;
+import static com.jacmobile.knockhockey.model.ThreeDObjectVertices.*;
+//import static com.jacmobile.knockhockey.model.TwoDObjectVertices.*;
 import static com.jacmobile.knockhockey.utils.GLUtils.compileFragmentShader;
 import static com.jacmobile.knockhockey.utils.GLUtils.compileVertexShader;
 import static com.jacmobile.knockhockey.utils.GLUtils.linkProgram;
@@ -49,6 +50,7 @@ public class GLRenderer implements GLSurfaceView.Renderer
     private int uMatrixLocation;
     private static final String U_MATRIX = "u_Matrix";
     private final float[] projectionMatrix = new float[16];
+    private final float[] modelMatrix = new float[16];
 
     /**
      * Allocate native memory for the vertices *that won't be GC'ed*.
@@ -100,14 +102,23 @@ public class GLRenderer implements GLSurfaceView.Renderer
 
     @Override public void onSurfaceChanged(GL10 gl, int width, int height)
     {
-        gl.glViewport(0,0,width,height);
+        gl.glViewport(0, 0, width, height);
+//        MatrixUtil.perspectiveM(projectionMatrix, 45, (float) width / (float) height, 1, 10);
+        perspectiveM(projectionMatrix, 0, 60, (float) width / (float) height, 1, 10);
+        setIdentityM(modelMatrix, 0);
+        translateM(modelMatrix, 0, 0, 0, -2.5f);
+        rotateM(modelMatrix, 0, -50, 1, 0, 0);
+        final float[] temp = new float[16];
+        multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
+        System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
 
-        final float aspectRatio = GLUtils.getAspectRatio(width, height);
-        if (width > height) {
-            orthoM(projectionMatrix, 0, -aspectRatio, aspectRatio, -1, 1, -1, 1);
-        } else {
-            orthoM(projectionMatrix, 0, -1, 1, -aspectRatio, aspectRatio, -1, 1);
-        }
+        //3d projection
+//        final float aspectRatio = GLUtils.getAspectRatio(width, height);
+//        if (width > height) {
+//            orthoM(projectionMatrix, 0, -aspectRatio, aspectRatio, -1, 1, -1, 1);
+//        } else {
+//            orthoM(projectionMatrix, 0, -1, 1, -aspectRatio, aspectRatio, -1, 1);
+//        }
     }
 
     @Override public void onDrawFrame(GL10 gl)
