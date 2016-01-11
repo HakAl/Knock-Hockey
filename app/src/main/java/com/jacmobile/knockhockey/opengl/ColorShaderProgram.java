@@ -1,6 +1,9 @@
 package com.jacmobile.knockhockey.opengl;
 
-import static android.opengl.GLES20.*;
+import static android.opengl.GLES20.glGetAttribLocation;
+import static android.opengl.GLES20.glGetUniformLocation;
+import static android.opengl.GLES20.glUniformMatrix4fv;
+import static android.opengl.GLES20.glUseProgram;
 
 public class ColorShaderProgram extends ShaderProgram
 {
@@ -18,7 +21,7 @@ public class ColorShaderProgram extends ShaderProgram
 
     @Override public void onFrame()
     {
-        buildProgram();
+        glUseProgram(program);
     }
 
     public void setUniformas(float[] matrix)

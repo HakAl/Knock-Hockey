@@ -8,6 +8,7 @@ import static android.opengl.GLES20.glGetAttribLocation;
 import static android.opengl.GLES20.glGetUniformLocation;
 import static android.opengl.GLES20.glUniform1i;
 import static android.opengl.GLES20.glUniformMatrix4fv;
+import static android.opengl.GLES20.glUseProgram;
 
 public class TextureShaderProgram extends ShaderProgram
 {
@@ -29,7 +30,7 @@ public class TextureShaderProgram extends ShaderProgram
 
     public void onFrame()
     {
-        buildProgram();
+        glUseProgram(program);
     }
 
     public void setUniforms(float[] matrix, int textureId)

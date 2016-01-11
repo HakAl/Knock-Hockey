@@ -11,18 +11,10 @@ public abstract class ShaderProgram
     protected static final String A_TEXTURE_COORDINATES = "a_TextureCoordinates";
 
     protected int program;
-    private final LinkedShaders linkedShaders;
 
     public ShaderProgram(LinkedShaders linkedShaders)
     {
-        this.linkedShaders = linkedShaders;
         this.program = linkedShaders.buildProgram();
-    }
-
-    protected int buildProgram()
-    {
-        glUseProgram(program);
-        return program;
     }
 
     /**
