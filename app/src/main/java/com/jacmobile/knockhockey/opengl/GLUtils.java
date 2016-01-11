@@ -1,4 +1,4 @@
-package com.jacmobile.knockhockey.utils;
+package com.jacmobile.knockhockey.opengl;
 
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.os.Build;
 
 import com.jacmobile.knockhockey.BuildConfig;
+import com.jacmobile.knockhockey.utils.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -40,7 +41,6 @@ import static android.opengl.GLES20.glGetShaderInfoLog;
 import static android.opengl.GLES20.glGetShaderiv;
 import static android.opengl.GLES20.glLinkProgram;
 import static android.opengl.GLES20.glShaderSource;
-import static android.opengl.GLES20.glTexImage2D;
 import static android.opengl.GLES20.glTexParameteri;
 import static android.opengl.GLES20.glValidateProgram;
 import static android.opengl.GLUtils.texImage2D;
@@ -234,7 +234,7 @@ public class GLUtils
 
         m[12] = 0;
         m[13] = a;
-        m[14] = -((2f * f * n) / (f - n));
+        m[14] = -((2 * f * n) / (f - n));
         m[15] = 0;
     }
 }

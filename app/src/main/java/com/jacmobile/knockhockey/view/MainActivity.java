@@ -7,17 +7,16 @@ import android.os.Bundle;
 
 import com.jacmobile.knockhockey.App;
 import com.jacmobile.knockhockey.R;
-import com.jacmobile.knockhockey.utils.GLUtils;
+import com.jacmobile.knockhockey.opengl.GLUtils;
 
 import javax.inject.Inject;
 
 public class MainActivity extends Activity
 {
-    @Inject GLRenderer glRenderer;
     @Inject ConfigurationInfo configurationInfo;
-
-    private boolean redererSet = false;
+    @Inject GLRenderer glRenderer;
     private GLSurfaceView glSurfaceView;
+    private boolean redererSet = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
