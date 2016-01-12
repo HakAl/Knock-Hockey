@@ -19,7 +19,7 @@ public class TextureShaderProgram extends ShaderProgram
     private int aPositionLocation;
     private int aTextureCoordinatesLocation;
 
-    public TextureShaderProgram(LinkedShaders linkedShaders)
+    public TextureShaderProgram(TextureShaders linkedShaders)
     {
         super(linkedShaders);
         this.uMatrixLocation = glGetUniformLocation(program, U_MATRIX);

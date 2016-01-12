@@ -11,15 +11,13 @@ public class ColorShaderProgram extends ShaderProgram
     private int uMatrixLocation;
     private int uColorLocation;
     private int aPositionLocation;
-    private int aColorLocation;
 
-    public ColorShaderProgram(LinkedShaders linkedShaders)
+    public ColorShaderProgram(SimpleShaders linkedShaders)
     {
         super(linkedShaders);
-        this.uColorLocation = glGetUniformLocation(program, U_COLOR);
         this.uMatrixLocation = glGetUniformLocation(program, U_MATRIX);
+        this.uColorLocation = glGetUniformLocation(program, U_COLOR);
         this.aPositionLocation = glGetAttribLocation(program, A_POSITION);
-        this.aColorLocation = glGetAttribLocation(program, A_COLOR);
     }
 
     @Override public void onDrawFrame()
@@ -36,10 +34,5 @@ public class ColorShaderProgram extends ShaderProgram
     public int getPositionLocation()
     {
         return aPositionLocation;
-    }
-
-    public int getColorLocation()
-    {
-        return aColorLocation;
     }
 }

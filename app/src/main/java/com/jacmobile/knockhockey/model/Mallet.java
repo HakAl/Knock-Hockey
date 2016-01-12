@@ -18,17 +18,12 @@ public class Mallet
     private final VertexArray vertexArray;
     private final List<ObjectBuilder.DrawCommand> drawList;
 
-    public static final float[] VERTEX_DATA = {
-            0f, -.4f, 0f, 0f, 1,
-            0f, .4f, 1f, 0f, 0f
-    };
-
     public Mallet(float radius, float height, int numPoints)
     {
-        this.radius = radius;
-        this.height = height;
         ObjectBuilder.GeneratedData generatedData = ObjectBuilder.createMallet(
                 new Geometry.Point(0, 0, 0), radius, height, numPoints);
+        this.radius = radius;
+        this.height = height;
         this.vertexArray = new VertexArray(generatedData.vertexData);
         drawList = generatedData.drawList;
     }

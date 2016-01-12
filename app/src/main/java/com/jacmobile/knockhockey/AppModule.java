@@ -7,7 +7,9 @@ import android.content.pm.ConfigurationInfo;
 import com.jacmobile.knockhockey.opengl.ColorShaderProgram;
 import com.jacmobile.knockhockey.opengl.LinkedShaders;
 import com.jacmobile.knockhockey.opengl.ShaderProgram;
+import com.jacmobile.knockhockey.opengl.SimpleShaders;
 import com.jacmobile.knockhockey.opengl.TextureShaderProgram;
+import com.jacmobile.knockhockey.opengl.TextureShaders;
 import com.jacmobile.knockhockey.view.GLRenderer;
 
 import javax.inject.Singleton;
@@ -36,14 +38,20 @@ import static com.jacmobile.knockhockey.opengl.GLUtils.readTextFileFromResource;
         return am.getDeviceConfigurationInfo();
     }
 
-    @Provides @Singleton public LinkedShaders provideLinkedShaders()
+    @Provides @Singleton public SimpleShaders provideSimpleShaders()
     {
-        return new LinkedShaders(readTextFileFromResource(app, R.raw.texture_vertex_shader),
+        return new SimpleShaders(readTextFileFromResource(app, R.raw.s_vertex_shader),
+                readTextFileFromResource(app, R.raw.s_fragment_shader));
+    }
+
+    @Provides @Singleton public TextureShaders provideTextureShaders()
+    {
+        return new TextureShaders(readTextFileFromResource(app, R.raw.texture_vertex_shader),
                 readTextFileFromResource(app, R.raw.texture_fragment_shader));
     }
 
-    @Provides @Singleton public GLRenderer provideGLRenderer(LinkedShaders linkedShaders)
+    @Provides @Singleton public GLRenderer provideGLRenderer(SimpleShaders simpleShaders, TextureShaders textureShaders)
     {
-        return new GLRenderer(app, linkedShaders);
+        return new GLRenderer(app, simpleShaders, textureShaders);
     }
 }

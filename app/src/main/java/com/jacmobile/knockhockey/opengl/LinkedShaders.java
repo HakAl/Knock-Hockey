@@ -1,6 +1,6 @@
 package com.jacmobile.knockhockey.opengl;
 
-public class LinkedShaders
+public abstract class LinkedShaders
 {
     public int program;
     public String vertexShader;
