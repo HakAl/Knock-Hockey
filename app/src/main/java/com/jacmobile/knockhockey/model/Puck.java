@@ -17,9 +17,11 @@ public class Puck
     {
         this.radius = radius;
         this.height = height;
+
         ObjectBuilder.GeneratedData generatedData = ObjectBuilder.createPuck(
                 new Geometry.Cylinder(new Geometry.Point(0,0,0), radius, height), numPoints);
         this.vertexArray = new VertexArray(generatedData.vertexData);
+
         drawList = generatedData.drawList;
     }
 

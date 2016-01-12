@@ -28,7 +28,7 @@ public class TextureShaderProgram extends ShaderProgram
         this.aTextureCoordinatesLocation = glGetAttribLocation(program, A_TEXTURE_COORDINATES);
     }
 
-    public void onFrame()
+    public void onDrawFrame()
     {
         glUseProgram(program);
     }

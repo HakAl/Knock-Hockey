@@ -1,6 +1,7 @@
 package com.jacmobile.knockhockey.model;
 
 import com.jacmobile.knockhockey.opengl.ColorShaderProgram;
+import com.jacmobile.knockhockey.opengl.Geometry;
 
 import java.util.List;
 
@@ -26,20 +27,25 @@ public class Mallet
     {
         this.radius = radius;
         this.height = height;
+        ObjectBuilder.GeneratedData generatedData = ObjectBuilder.createMallet(
+                new Geometry.Point(0, 0, 0), radius, height, numPoints);
+        this.vertexArray = new VertexArray(generatedData.vertexData);
+        drawList = generatedData.drawList;
     }
 
-    public void bindAndDraw(ColorShaderProgram shaderProgram)
+    public void bind(ColorShaderProgram shaderProgram)
     {
         vertexArray.setVertexAttributePointer(
                 0,
                 shaderProgram.getPositionLocation(),
                 POSITION_COMPONENT_COUNT,
-                MALLET_STRIDE);
-        vertexArray.setVertexAttributePointer(
-                POSITION_COMPONENT_COUNT,
-                shaderProgram.getColorLocation(),
-                COLOR_COMPONENT_COUNT,
-                MALLET_STRIDE);
-        glDrawArrays(GL_POINTS, 0, 2);
+                0);
+    }
+
+    public void draw()
+    {
+        for (ObjectBuilder.DrawCommand drawCommand : drawList) {
+            drawCommand.draw();
+        }
     }
 }

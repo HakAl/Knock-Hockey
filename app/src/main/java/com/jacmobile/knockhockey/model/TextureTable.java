@@ -16,14 +16,16 @@ public class TextureTable
             -.5f, -.8f, 0f, .9f
     };
 
+    public int texture;
     private final VertexArray vertexArray;
 
-    public TextureTable()
+    public TextureTable(int texture)
     {
+        this.texture = texture;
         this.vertexArray = new VertexArray(VERTEX_DATA);
     }
 
-    public void bindAndDraw(TextureShaderProgram textureShaderProgram)
+    public void bind(TextureShaderProgram textureShaderProgram)
     {
         vertexArray.setVertexAttributePointer(
                 0,
@@ -35,6 +37,10 @@ public class TextureTable
                 textureShaderProgram.getTextureCoordinatesAttributeLocation(),
                 TEXTURE_COORDINATES_COMPONENT_COUNT,
                 TABLE_STRIDE);
+    }
+
+    public void draw()
+    {
         glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
     }
 }

@@ -120,7 +120,10 @@ public class ObjectBuilder
         ObjectBuilder builder = new ObjectBuilder(size);
         Geometry.Circle puckTop = new Geometry.Circle(
                 puck.center.translateY(puck.height/2), puck.radius);
-        builder.
+        builder.appendCircle(puckTop, numPoints);
+        builder.appendOpenCylinder(puck, numPoints);
+
+        return builder.build();
     }
 
     static GeneratedData createMallet(Geometry.Point center, float radius, float height, int numPoints)
@@ -129,8 +132,10 @@ public class ObjectBuilder
                 + sizeOfOpenCylinderInVertices(numPoints) * 2;
 
         ObjectBuilder builder = new ObjectBuilder(size);
+
         float baseHeight = height * .5f;
         float handleRadius = radius / 3f;
+
         Geometry.Circle baseCircle = new Geometry.Circle(center.translateY(-baseHeight), radius);
         Geometry.Cylinder baseCylinder = new Geometry.Cylinder(baseCircle.center.translateY(-baseHeight / 2f),
                 radius, baseHeight);
