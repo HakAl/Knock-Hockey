@@ -6,14 +6,19 @@ import static android.opengl.GLES20.*;
 
 public class TextureTable
 {
+    public static final float LEFT_BOUND = -.5f;
+    public static final float RIGHT_BOUND = .5f;
+    public static final float FAR_BOUND = -.8f;
+    public static final float NEAR_BOUND = .8f;
+
     //Order of coordinates: X, Y, S, T
     public static final float[] VERTEX_DATA = {
             0f, 0f, .5f, .5f,
-            -.5f, -.8f, 0f, .9f,
-            .5f, -.8f, 1f, .9f,
-            .5f, .8f, 1f, .1f,
-            -.5f, .8f, 0f, .1f,
-            -.5f, -.8f, 0f, .9f
+            LEFT_BOUND, FAR_BOUND, 0f, .9f,
+            RIGHT_BOUND, FAR_BOUND, 1f, .9f,
+            RIGHT_BOUND, NEAR_BOUND, 1f, .1f,
+            LEFT_BOUND, NEAR_BOUND, 0f, .1f,
+            LEFT_BOUND, FAR_BOUND, 0f, .9f
     };
 
     public int texture;

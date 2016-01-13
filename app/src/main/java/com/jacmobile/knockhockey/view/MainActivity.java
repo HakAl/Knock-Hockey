@@ -33,8 +33,9 @@ public class MainActivity extends Activity
                 @Override public boolean onTouch(final View v, final MotionEvent event)
                 {
                     if (event != null) {
-                        final float normalX = getNormalizedX(event.getX(), v.getWidth());
-                        final float normalY = getNormalizedY(event.getY(), v.getHeight());
+                        final float normalX = (event.getX() / (float) v.getWidth()) * 2 - 1;
+                        final float normalY = -((event.getY() / (float) v.getHeight()) * 2 - 1);
+
                         switch (event.getAction()) {
                             case MotionEvent.ACTION_DOWN:
                                 glSurfaceView.queueEvent(new Runnable() {
@@ -64,16 +65,6 @@ public class MainActivity extends Activity
         } else {
             setContentView(R.layout.error_layout);
         }
-    }
-
-    static final float getNormalizedX(float x, float width)
-    {
-        return (x / (float) width) * 2 - 1;
-    }
-
-    static final float getNormalizedY(float y, float height)
-    {
-        return -(y / (float) height) * 2 - 1;
     }
 
     @Override protected void onResume()

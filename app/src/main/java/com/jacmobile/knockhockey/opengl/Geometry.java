@@ -1,5 +1,7 @@
 package com.jacmobile.knockhockey.opengl;
 
+import com.jacmobile.knockhockey.utils.Logger;
+
 public class Geometry
 {
     /**
@@ -25,9 +27,29 @@ public class Geometry
         return p1ToPoint.crossProduct(p2ToPoint).length() / ray.vector.length();
     }
 
+    /**
+     * @return  true if the ray intersects with the sphere
+     */
     public static boolean intersects(Sphere sphere, Ray ray)
     {
         return distanceBetween(sphere.center, ray) < sphere.radius;
+    }
+
+    /**
+     * @param ray
+     * @param plane
+     * @return
+     */
+    public static Point intersectionPoint(Ray ray, Plane plane)
+    {
+        Vector rayToPlane = vectorBetween(ray.point, plane.point);
+        float scaleFactor = rayToPlane.dotProduct(plane.normal) / ray.vector.dotProduct(plane.normal);
+        return ray.point.translate(ray.vector.scale(scaleFactor));
+    }
+
+    public static float clamp(float value, float min, float max)
+    {
+        return Math.min(max, Math.max(value, min));
     }
 
 ////Shapes
@@ -81,6 +103,16 @@ public class Geometry
                     (y * v.z) - (z * v.y),
                     (z * v.x) - (x * v.z),
                     (x * v.y) - (y * v.x));
+        }
+
+        public float dotProduct(Vector v)
+        {
+            return x * v.x + y * v.y + z * v.z;
+        }
+
+        public Vector scale(float f)
+        {
+            return new Vector(x * f, y * f, z * f);
         }
 
         public float length()

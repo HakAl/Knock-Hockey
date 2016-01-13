@@ -2,6 +2,7 @@ package com.jacmobile.knockhockey.view;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;
+import android.util.Log;
 
 import com.jacmobile.knockhockey.R;
 import com.jacmobile.knockhockey.model.Mallet;
@@ -17,7 +18,7 @@ import com.jacmobile.knockhockey.opengl.TextureShaders;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
+import static android.opengl.GLES20.*;
 import static android.opengl.GLES20.glClear;
 import static android.opengl.GLES20.glClearColor;
 import static android.opengl.Matrix.invertM;
@@ -29,6 +30,8 @@ import static android.opengl.Matrix.setIdentityM;
 import static android.opengl.Matrix.setLookAtM;
 import static android.opengl.Matrix.translateM;
 
+import static com.jacmobile.knockhockey.opengl.Geometry.*;
+
 public class GLRenderer implements GLSurfaceView.Renderer, TouchHandler
 {
     private Context context;
@@ -37,8 +40,11 @@ public class GLRenderer implements GLSurfaceView.Renderer, TouchHandler
     private Mallet mallet;
     private TextureTable textureTable;
 
-    private boolean malletPressed = false;
-    private Geometry.Point playerMalletPosition;
+    private boolean malletPressed;
+    private Point playerMalletPosition;
+    private Point previousPlayerMalletPosition;
+    private Point puckPosition;
+    private Vector puckVector;
 
     private SimpleShaders simpleShaders;
     private TextureShaders textureShaders;
@@ -57,7 +63,7 @@ public class GLRenderer implements GLSurfaceView.Renderer, TouchHandler
      * After copying the data to memory, the data must be passed
      * to OpenGL through shaders. Shaders tell the GPU how to
      * process data.
-     *
+     * <p/>
      * If code requires many ByteBuffers, refer to this:
      * http://en.wikipedia.org/wiki/Memory_pool
      */
@@ -70,23 +76,23 @@ public class GLRenderer implements GLSurfaceView.Renderer, TouchHandler
 
     @Override public void onSurfaceCreated(GL10 gl, EGLConfig config)
     {
-        glClearColor(0,0,0,0);
+        glClearColor(0, 0, 0, 0);
 
         this.textureTable = new TextureTable(
                 GLUtils.loadTexture(context, R.drawable.air_hockey_surface));
-
         this.mallet = new Mallet(.08f, .15f, 32);
         this.puck = new Puck(.06f, .02f, 32);
+        this.playerMalletPosition = new Point(0, mallet.height / 2f, .4f);
+        this.puckPosition = new Point(0f, puck.height / 2f, 0);
+        this.puckVector = new Vector(0, 0, 0);
 
         this.colorShaderProgram = new ColorShaderProgram(simpleShaders);
         this.textureShaderProgram = new TextureShaderProgram(textureShaders);
-
-        this.playerMalletPosition = new Geometry.Point(0, mallet.height / 2f, .4f);
     }
 
     @Override public void onSurfaceChanged(GL10 gl, int width, int height)
     {
-        gl.glViewport(0, 0, width, height);
+        glViewport(0, 0, width, height);
 
         perspectiveM(projectionMatrix, 0, 60, (float) width / (float) height, 1, 10);
         setLookAtM(viewMatrix, 0, 0, 1.2f, 2.2f, 0, 0, 0, 0, 1, 0);
@@ -95,6 +101,11 @@ public class GLRenderer implements GLSurfaceView.Renderer, TouchHandler
     @Override public void onDrawFrame(GL10 gl)
     {
         glClear(GL_COLOR_BUFFER_BIT);
+
+        puckPosition = puckPosition.translate(puckVector);
+
+        clampPuckToTable();
+
 
         multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
         invertM(invertedViewProjectionMatrix, 0, viewProjectionMatrix, 0);
@@ -110,31 +121,66 @@ public class GLRenderer implements GLSurfaceView.Renderer, TouchHandler
         mallet.bind(colorShaderProgram);
         mallet.draw();
 
-        positionObjectInScene(0, mallet.height / 2f, .4f);
+        positionObjectInScene(playerMalletPosition.x, playerMalletPosition.y, playerMalletPosition.z);
         colorShaderProgram.setUniforms(modelViewProjectionMatrix, 0, 0, 1);
         mallet.draw();
 
-        positionObjectInScene(0, puck.height / 2f, 0);
+        positionObjectInScene(puckPosition.x, puckPosition.y, puckPosition.z);
         colorShaderProgram.setUniforms(modelViewProjectionMatrix, .1f, .1f, .1f);
         puck.draw(colorShaderProgram);
     }
 
     @Override public void handleTouch(float normalizedX, float normalizedY)
     {
-        malletPressed = Geometry.intersects(new Geometry.Sphere(new Geometry.Point(
-                        playerMalletPosition.x, playerMalletPosition.y, playerMalletPosition.z),
-                        mallet.height / 2f),
-                convertNormalizedPointToRay(normalizedX, normalizedY)
-        );
+        Point malletLocation = new Point(playerMalletPosition.x, playerMalletPosition.y, playerMalletPosition.z);
+        Sphere malletSphere = new Sphere(malletLocation, mallet.height / 2f);
+        malletPressed = intersects(malletSphere, convertNormalized2DPointToRay(normalizedX, normalizedY));
     }
 
     @Override public void handleDrag(float normalizedX, float normalizedY)
     {
         if (malletPressed) {
-            Geometry.Ray ray = convertNormalizedPointToRay(normalizedX, normalizedY);
-            Geometry.Plane plane = new Geometry.Plane(new Geometry.Point(0, 0, 0), new Geometry.Vector(0, 1, 0));
-            Geometry.Point touchedPoint = Geometry.
+            previousPlayerMalletPosition = playerMalletPosition;
+
+            Ray ray = convertNormalized2DPointToRay(normalizedX, normalizedY);
+            Plane plane = new Plane(new Point(0, 0, 0), new Vector(0, 1, 0));
+            Point touchedPoint = intersectionPoint(ray, plane);
+            playerMalletPosition = new Point(
+                    clamp(touchedPoint.x,
+                            TextureTable.LEFT_BOUND + mallet.radius,
+                            TextureTable.RIGHT_BOUND - mallet.radius),
+                    mallet.height / 2f,
+                    clamp(touchedPoint.z, mallet.radius, TextureTable.NEAR_BOUND - mallet.radius));
+
+            float distance = vectorBetween(playerMalletPosition, puckPosition).length();
+
+            if (distance < (puck.radius + mallet.radius)) {
+                puckVector = vectorBetween(previousPlayerMalletPosition, playerMalletPosition);
+            }
         }
+    }
+
+    private void clampPuckToTable()
+    {
+        if (puckPosition.x < TextureTable.LEFT_BOUND + puck.radius
+                || puckPosition.x > TextureTable.RIGHT_BOUND - puck.radius) {
+            puckVector = new Vector(-puckVector.x, puckVector.y, puckVector.z);
+            puckVector = puckVector.scale(.9f);
+        }
+        if (puckPosition.z < TextureTable.FAR_BOUND + puck.radius
+                || puckPosition.z > TextureTable.NEAR_BOUND - puck.radius) {
+            puckVector = new Vector(puckVector.x, puckVector.y, -puckVector.z);
+            puckVector = puckVector.scale(.9f);
+        }
+
+        puckVector = puckVector.scale(.9999f);//friction
+        puckPosition = new Point(
+                clamp(puckPosition.x, TextureTable.LEFT_BOUND + puck.radius, TextureTable.RIGHT_BOUND - puck.radius),
+                puckPosition.y,
+                clamp(puckPosition.z, TextureTable.FAR_BOUND + puck.radius, TextureTable.NEAR_BOUND - puck.radius));
+
+
+//        boolean intersectsMallet = intersects(new Sphere(playerMalletPosition, mallet.height / 2f), convertNormalized2DPointToRay(puckPosition.x, puckPosition.y));
     }
 
     private void positionTable()
@@ -153,11 +199,12 @@ public class GLRenderer implements GLSurfaceView.Renderer, TouchHandler
 
     /**
      * First multiply by the inverse matrix, then undo the perspective divide.
+     *
      * @param x normalized x
      * @param y normalized y
      * @return a Ray representing the touch point
      */
-    private Geometry.Ray convertNormalizedPointToRay(float x, float y)
+    private Ray convertNormalized2DPointToRay(float x, float y)
     {
         final float[] nearPoint = {x, y, -1, 1};
         final float[] farPoint = {x, y, 1, 1};
@@ -169,10 +216,10 @@ public class GLRenderer implements GLSurfaceView.Renderer, TouchHandler
         divideByW(nearPointWorld);
         divideByW(farPointWorld);
 
-        Geometry.Point nearPointRay = new Geometry.Point(nearPointWorld[0], nearPointWorld[1], nearPointWorld[2]);
+        Point nearPointRay = new Point(nearPointWorld[0], nearPointWorld[1], nearPointWorld[2]);
+        Point farPointRay = new Point(farPointWorld[0], farPointWorld[1], farPointWorld[2]);
 
-        return new Geometry.Ray(nearPointRay, Geometry.vectorBetween(nearPointRay,
-                new Geometry.Point(farPointWorld[0], farPointWorld[1], farPointWorld[2])));
+        return new Ray(nearPointRay, vectorBetween(nearPointRay, farPointRay));
     }
 
     private static void divideByW(float[] vector)
