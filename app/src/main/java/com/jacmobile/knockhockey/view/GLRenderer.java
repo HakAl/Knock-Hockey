@@ -10,7 +10,6 @@ import com.jacmobile.knockhockey.model.TextureTable;
 import com.jacmobile.knockhockey.opengl.ColorShaderProgram;
 import com.jacmobile.knockhockey.opengl.GLUtils;
 import com.jacmobile.knockhockey.opengl.Geometry;
-import com.jacmobile.knockhockey.opengl.LinkedShaders;
 import com.jacmobile.knockhockey.opengl.SimpleShaders;
 import com.jacmobile.knockhockey.opengl.TextureShaderProgram;
 import com.jacmobile.knockhockey.opengl.TextureShaders;
@@ -20,10 +19,13 @@ import javax.microedition.khronos.opengles.GL10;
 
 import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
 import static android.opengl.GLES20.glClear;
-import static android.opengl.GLES20.*;
+import static android.opengl.GLES20.glClearColor;
+import static android.opengl.Matrix.invertM;
 import static android.opengl.Matrix.multiplyMM;
+import static android.opengl.Matrix.multiplyMV;
 import static android.opengl.Matrix.perspectiveM;
-import static android.opengl.Matrix.*;
+import static android.opengl.Matrix.rotateM;
+import static android.opengl.Matrix.setIdentityM;
 import static android.opengl.Matrix.setLookAtM;
 import static android.opengl.Matrix.translateM;
 
@@ -119,12 +121,20 @@ public class GLRenderer implements GLSurfaceView.Renderer, TouchHandler
 
     @Override public void handleTouch(float normalizedX, float normalizedY)
     {
-        Geometry.Ray ray;
+        malletPressed = Geometry.intersects(new Geometry.Sphere(new Geometry.Point(
+                        playerMalletPosition.x, playerMalletPosition.y, playerMalletPosition.z),
+                        mallet.height / 2f),
+                convertNormalizedPointToRay(normalizedX, normalizedY)
+        );
     }
 
     @Override public void handleDrag(float normalizedX, float normalizedY)
     {
-
+        if (malletPressed) {
+            Geometry.Ray ray = convertNormalizedPointToRay(normalizedX, normalizedY);
+            Geometry.Plane plane = new Geometry.Plane(new Geometry.Point(0, 0, 0), new Geometry.Vector(0, 1, 0));
+            Geometry.Point touchedPoint = Geometry.
+        }
     }
 
     private void positionTable()
