@@ -52,8 +52,6 @@ public class Geometry
         return Math.min(max, Math.max(value, min));
     }
 
-////Shapes
-
     public static class Point
     {
         public final float x, y, z;

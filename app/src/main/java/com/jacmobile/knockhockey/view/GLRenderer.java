@@ -61,8 +61,7 @@ public class GLRenderer implements GLSurfaceView.Renderer, TouchHandler
     /**
      * Allocate native memory for the vertices *that won't be GC'ed*.
      * After copying the data to memory, the data must be passed
-     * to OpenGL through shaders. Shaders tell the GPU how to
-     * process data.
+     * to OpenGL through shaders. Shaders tell the GPU how to process data.
      * <p/>
      * If code requires many ByteBuffers, refer to this:
      * http://en.wikipedia.org/wiki/Memory_pool

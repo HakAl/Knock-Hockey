@@ -1,13 +1,16 @@
 package com.jacmobile.knockhockey.model;
 
-
-import android.util.FloatMath;
-
 import com.jacmobile.knockhockey.opengl.Geometry;
 
 import java.util.ArrayList;
 import java.util.List;
-import static android.opengl.GLES20.*;
+
+import static android.opengl.GLES20.GL_TRIANGLE_FAN;
+import static android.opengl.GLES20.GL_TRIANGLE_STRIP;
+import static android.opengl.GLES20.glDrawArrays;
+
+import static com.jacmobile.knockhockey.opengl.Geometry.*;
+        
 
 public class ObjectBuilder
 {
@@ -44,18 +47,18 @@ public class ObjectBuilder
         return new GeneratedData(vertexData, drawList);
     }
 
-    static GeneratedData createPuck(Geometry.Cylinder puck, int numPoints)
+    static GeneratedData createPuck(Cylinder puck, int numPoints)
     {
         int size = sizeOfCircleInVertices(numPoints) + sizeOfOpenCylinderInVertices(numPoints);
         ObjectBuilder builder = new ObjectBuilder(size);
-        Geometry.Circle puckTop = new Geometry.Circle(puck.center.translateY(puck.height/2f), puck.radius);
+        Circle puckTop = new Circle(puck.center.translateY(puck.height/2f), puck.radius);
         builder.appendCircle(puckTop, numPoints);
         builder.appendOpenCylinder(puck, numPoints);
 
         return builder.build();
     }
 
-    static GeneratedData createMallet(Geometry.Point center, float radius, float height, int numPoints)
+    static GeneratedData createMallet(Point center, float radius, float height, int numPoints)
     {
         int size = sizeOfCircleInVertices(numPoints) * 2 + sizeOfOpenCylinderInVertices(numPoints) * 2;
 
@@ -65,14 +68,14 @@ public class ObjectBuilder
         float handleRadius = radius / 3f;
         float handleHeight = height - baseHeight;
 
-        Geometry.Circle baseCircle = new Geometry.Circle(center.translateY(-baseHeight), radius);
-        Geometry.Cylinder baseCylinder = new Geometry.Cylinder(baseCircle.center.translateY(-baseHeight / 2f),
+        Circle baseCircle = new Circle(center.translateY(-baseHeight), radius);
+        Cylinder baseCylinder = new Cylinder(baseCircle.center.translateY(-baseHeight / 2f),
                 radius, baseHeight);
         builder.appendCircle(baseCircle, numPoints);
         builder.appendOpenCylinder(baseCylinder, numPoints);
 
-        Geometry.Circle handleCircle = new Geometry.Circle(center.translateY(height / 2f), handleRadius);
-        Geometry.Cylinder handleCylinder = new Geometry.Cylinder(handleCircle.center.translateY(-handleHeight / 2f),
+        Circle handleCircle = new Circle(center.translateY(height / 2f), handleRadius);
+        Cylinder handleCylinder = new Cylinder(handleCircle.center.translateY(-handleHeight / 2f),
                 handleRadius, handleHeight);
         builder.appendCircle(handleCircle, numPoints);
         builder.appendOpenCylinder(handleCylinder, numPoints);
@@ -80,7 +83,34 @@ public class ObjectBuilder
         return builder.build();
     }
 
-    private void appendCircle(Geometry.Circle circle, int numPoints) {
+    static GeneratedData createKnockHockeyStick(Point center,
+                                                float stickRadius, float length, int numPoints)
+    {
+        int size =
+              + sizeOfOpenCylinderInVertices(numPoints) * 2;
+
+        ObjectBuilder builder = new ObjectBuilder(size);
+
+        float stickLength = length;
+        float baseLength = length * .33f;
+        float baseRadius = stickRadius * 2f;
+
+        Circle baseCircle = new Circle(center.translateY(-stickLength), baseRadius);
+        Cylinder baseCylinder = new Cylinder(baseCircle.center.translateY(-stickLength / 2f),
+                stickRadius, stickLength);
+        builder.appendCircle(baseCircle, numPoints);
+        builder.appendOpenCylinder(baseCylinder, numPoints);
+
+        Circle handleCircle = new Circle(center.translateY(length / 2f), stickRadius);
+        Cylinder handleCylinder = new Cylinder(handleCircle.center.translateY(-stickLength / 2f),
+                handleRadius, handleHeight);
+        builder.appendCircle(handleCircle, numPoints);
+        builder.appendOpenCylinder(handleCylinder, numPoints);
+
+        return builder.build();
+    }
+
+    private void appendCircle(Circle circle, int numPoints) {
         final int startVertex = offset / FLOATS_PER_VERTEX;
         final int numVertices = sizeOfCircleInVertices(numPoints);
 
@@ -112,7 +142,7 @@ public class ObjectBuilder
         });
     }
 
-    private void appendOpenCylinder(Geometry.Cylinder cylinder, final int numPoints)
+    private void appendOpenCylinder(Cylinder cylinder, final int numPoints)
     {
         final int startVertex = offset / FLOATS_PER_VERTEX;
         final int numVertices = sizeOfOpenCylinderInVertices(numPoints);
